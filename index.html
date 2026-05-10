@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -83,14 +83,14 @@
     </div>
 
     <div class="meta-bar">
-        <div class="meta-item"><label>📅 DATE <span class="required-star">*</span></label><input type="date" id="inspectDate"></div>
-        <div class="meta-item"><label>⏰ TIME <span class="required-star">*</span></label><input type="text" id="inspectTime" placeholder="e.g. 08:30 / 1548"></div>
-        <div class="meta-item"><label>👤 INSPECTED BY <span class="required-star">*</span></label><input type="text" id="inspectedBy" placeholder="e.g. i21 or I(TD)21"></div>
-        <div class="meta-item"><label>🌦️ WEATHER AM</label><select id="weatherAM"><option value="">Select</option><option value="Sunny">Sunny</option><option value="Cloudy">Cloudy</option><option value="Fine">Fine</option><option value="Rainy">Rainy</option></select></div>
-        <div class="meta-item"><label>🌙 WEATHER PM</label><select id="weatherPM"><option value="">Select</option><option value="Sunny">Sunny</option><option value="Cloudy">Cloudy</option><option value="Fine">Fine</option><option value="Rainy">Rainy</option></select></div>
-        <div class="meta-item"><label>📅 DAY</label><select id="dayOfWeek"><option value="">Select</option><option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option><option value="Sunday">Sunday</option></select></div>
-        <div class="auto-save-badge" id="autoSaveBadge">💾 Auto-saved</div>
-    </div>
+    <div class="meta-item"><label>📅 DATE <span class="required-star">*</span></label><input type="date" id="inspectDate"></div>
+    <div class="meta-item"><label>⏰ TIME <span class="required-star">*</span></label><input type="text" id="inspectTime" placeholder="e.g. 08:30 / 1548"></div>
+    <div class="meta-item"><label>👤 INSPECTED BY <span class="required-star">*</span></label><input type="text" id="inspectedBy" placeholder="e.g. i21 or I(TD)21"></div>
+    <div class="meta-item"><label>🌦️ WEATHER AM</label><select id="weatherAM"><option value="">Select</option><option value="Sunny">Sunny</option><option value="Cloudy">Cloudy</option><option value="Fine">Fine</option><option value="Rainy">Rainy</option></select></div>
+    <div class="meta-item"><label>🌙 WEATHER PM</label><select id="weatherPM"><option value="">Select</option><option value="Sunny">Sunny</option><option value="Cloudy">Cloudy</option><option value="Fine">Fine</option><option value="Rainy">Rainy</option></select></div>
+    <div class="meta-item"><label>📅 DAY</label><input type="text" id="dayOfWeek" readonly style="background:#f5f5f5; cursor:default;"></div>
+    <div class="auto-save-badge" id="autoSaveBadge">💾 Auto-saved</div>
+</div>
 
     <form id="inspectionForm">
         <!-- ========================= SECTION 1: WEIGHBRIDGE AREA ========================= -->
@@ -166,8 +166,8 @@
                 <div class="field-row"><span class="label">6.3 Run-down screen / Sump pump</span><div class="input-area"><select name="wwt_screen_pump"><option value="">Select</option><option value="Y/Y">Y/Y</option><option value="N/N">N/N</option><option value="Y/N">Y/N</option><option value="N/Y">N/Y</option></select></div></div>
                 <div class="field-row"><span class="label">6.4 Oil skimmer / CEPT</span><div class="input-area"><select name="wwt_skimmer_cept"><option value="">Select</option><option value="Y/Y">Y/Y</option><option value="N/N">N/N</option><option value="Y/N">Y/N</option><option value="N/Y">N/Y</option></select></div></div>
                 <div class="field-row"><span class="label">6.5 Sludge holding tank / Filter press</span><div class="input-area"><select name="wwt_sludge_filter"><option value="">Select</option><option value="Y/Y">Y/Y</option><option value="N/N">N/N</option><option value="Y/N">Y/N</option><option value="N/Y">N/Y</option></select></div></div>
-                <div class="field-row"><span class="label">6.6 Air blower unit no. 1 / 2 / 3</span><div class="input-area"><input type="text" name="wwt_air_blower" placeholder="e.g. Y/Y/Y or N/N/Y"></div></div>
-                <div class="field-row"><span class="label">6.7 SBR 1 / SBR 2 (Aeration/Settling/Idle)</span><div class="input-area"><input type="text" name="wwt_sbr_status" placeholder="e.g. Aeration/Settling"></div></div>
+                <div class="field-row"><span class="label">6.6 Air blower unit no. 1 / 2 / 3</span><div class="input-area"><input type="text" name="wwt_air_blower" id="wwt_air_blower" placeholder="Y / Y / Y" value=" /  / "></div></div>
+                <div class="field-row"><span class="label">6.7 SBR 1 / SBR 2 (Aeration/Settling/Idle)</span><div class="input-area"><input type="text" name="wwt_sbr_status" id="wwt_sbr_status" placeholder="A / S" value=" / "></div></div>
                 <div class="field-row"><span class="label">6.8 Effluent tank / pH meter</span><div class="input-area"><select name="wwt_effluent_ph"><option value="">Select</option><option value="Y/Y">Y/Y</option><option value="N/N">N/N</option><option value="Y/N">Y/N</option><option value="N/Y">N/Y</option></select></div></div>
                 <div class="field-row"><span class="label">6.9 Effluent discharged meter (readings)</span><div class="input-area"><input type="text" name="wwt_effluent_reading" placeholder="(Reading in m³)"></div></div>
             </div>
@@ -607,6 +607,133 @@ document.querySelectorAll('input[type="text"], textarea').forEach(el => {
     }
 });
 
+// ============ SMART AIR BLOWER FORMATTING (自动添加 / 分隔符) ============
+function formatAirBlower(input) {
+    if (!input) return input;
+    let str = input.toString().trim();
+    
+    // 如果已经包含 /，检查是否需要格式化空格
+    if (str.includes('/')) {
+        // 已经是标准格式 Y / Y / Y 则返回
+        if (/^[A-Za-z0-9]\s\/\s[A-Za-z0-9]\s\/\s[A-Za-z0-9]$/.test(str)) return str;
+        if (/^[A-Za-z0-9]\s\/\s[A-Za-z0-9]$/.test(str)) return str;
+        // 如果是 Y/Y/Y 格式，转换为 Y / Y / Y
+        if (/^[A-Za-z0-9]\/[A-Za-z0-9]\/[A-Za-z0-9]$/.test(str)) {
+            let chars = str.split('/');
+            return chars.map(c => c.trim()).join(' / ');
+        }
+        if (/^[A-Za-z0-9]\/[A-Za-z0-9]$/.test(str)) {
+            let chars = str.split('/');
+            return chars.map(c => c.trim()).join(' / ');
+        }
+        return str;
+    }
+    
+    // 如果是 3 个字母如 YYY 或 YNY，转换为 Y / Y / Y
+    if (/^[A-Za-z0-9]{3}$/.test(str)) {
+        let chars = str.split('');
+        return chars.join(' / ');
+    }
+    
+    // 如果是 2 个字母如 YY，转换为 Y / Y
+    if (/^[A-Za-z0-9]{2}$/.test(str)) {
+        let chars = str.split('');
+        return chars.join(' / ');
+    }
+    
+    return str;
+}
+
+function applyAirBlowerFormat(el) {
+    if (el.value && el.value.trim()) {
+        let formatted = formatAirBlower(el.value);
+        if (formatted !== el.value) {
+            el.value = formatted;
+        }
+    }
+}
+
+// ============ SMART SBR STATUS FORMATTING & CONVERSION ============
+function formatSBRStatus(value) {
+    if (!value) return value;
+    let str = value.toString().trim();
+    
+    // 如果已经是完整单词，保持原样
+    if (str.includes('Aeration') || str.includes('Settling') || str.includes('Idle')) {
+        return str;
+    }
+    
+    // 处理 / 分隔符
+    let parts = [];
+    if (str.includes('/')) {
+        parts = str.split('/').map(p => p.trim());
+    } else if (str.includes(' ')) {
+        parts = str.split(' ').map(p => p.trim());
+    } else if (str.length >= 1) {
+        // 如 AS 格式，拆分成单个字母
+        parts = str.split('');
+    }
+    
+    // 转换状态字母到完整单词
+    const statusMap = {
+        'A': 'Aeration',
+        'S': 'Settling',
+        'I': 'Idle',
+        'AERATION': 'Aeration',
+        'SETTLING': 'Settling',
+        'IDLE': 'Idle'
+    };
+    
+    let convertedParts = parts.map(part => {
+        let upperPart = part.toUpperCase();
+        return statusMap[upperPart] || (upperPart.charAt(0).toUpperCase() + upperPart.slice(1).toLowerCase());
+    });
+    
+    return convertedParts.join(' / ');
+}
+
+function applySBRStatusFormat(el) {
+    if (el.value && el.value.trim()) {
+        let formatted = formatSBRStatus(el.value);
+        if (formatted !== el.value) {
+            el.value = formatted;
+        }
+    }
+}
+
+// 绑定 Air Blower 字段
+const airBlowerField = document.getElementById('wwt_air_blower');
+if (airBlowerField) {
+    airBlowerField.addEventListener('blur', () => applyAirBlowerFormat(airBlowerField));
+}
+
+// 绑定 SBR 状态字段
+const sbrStatusField = document.getElementById('wwt_sbr_status');
+if (sbrStatusField) {
+    sbrStatusField.addEventListener('blur', () => applySBRStatusFormat(sbrStatusField));
+}
+
+// ============ AUTO UPDATE DAY OF WEEK FROM DATE ============
+function updateDayOfWeek() {
+    const dateInput = document.getElementById('inspectDate');
+    const dayInput = document.getElementById('dayOfWeek');
+    
+    if (dateInput && dateInput.value && dayInput) {
+        const date = new Date(dateInput.value);
+        if (!isNaN(date.getTime())) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayName = days[date.getDay()];
+            dayInput.value = dayName;
+        }
+    }
+}
+
+// 监听日期变化
+const dateInputForDay = document.getElementById('inspectDate');
+if (dateInputForDay) {
+    dateInputForDay.addEventListener('change', updateDayOfWeek);
+}
+
 // ============ COLLECT FORM DATA ============
 function collectFormData() {
     const form = document.getElementById('inspectionForm');
@@ -635,8 +762,8 @@ function exportToExcel() {
     const date = document.getElementById('inspectDate').value;
     const formTime = document.getElementById('inspectTime').value;
     const inspected = document.getElementById('inspectedBy').value.trim();
-    if (!inspected) { alert('請填寫檢查人員姓名或編號 (Inspected By)'); inspectedBy.focus(); return; }
-    if (!date) { alert('請選擇巡查日期'); return; }
+    if (!inspected) { alert('Please enter Inspected By (ID)'); inspectedBy.focus(); return; }
+    if (!date) { alert('Please select inspection date'); return; }
     
     const flat = {
         inspection_date: date,
@@ -699,16 +826,16 @@ function exportToExcel() {
     XLSX.utils.book_append_sheet(wb, ws, `IETS_${date}`);
     XLSX.writeFile(wb, `IETS_Inspection_${date}_${inspected}.xlsx`);
     
-    alert(`✅ 匯出成功！多级表头已包括章节分组。\n日期: ${date}\n檢查人員: ${inspected}`);
+    alert(`✅ Export successful! Multi-level headers included.\nDate: ${date}\nInspected by: ${inspected}`);
     
     clearFormAfterExport();
 }
 
+// ============ CLEAR FORM AFTER EXPORT ============
 function clearFormAfterExport() {
     document.querySelectorAll('input[type="text"], textarea').forEach(el => { el.value = ''; });
     document.getElementById('inspectDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('inspectTime').value = '';
-    document.getElementById('dayOfWeek').selectedIndex = 0;
     document.getElementById('weatherAM').selectedIndex = 0;
     document.getElementById('weatherPM').selectedIndex = 0;
     
@@ -722,6 +849,15 @@ function clearFormAfterExport() {
             el.checked = false;
         }
     });
+    
+    // Reset Air Blower field
+    if (airBlowerField) airBlowerField.value = '';
+    
+    // Reset SBR Status field
+    if (sbrStatusField) sbrStatusField.value = '';
+    
+    // Update day of week
+    updateDayOfWeek();
     
     localStorage.removeItem('IETS_CURRENT_DRAFT_V1');
     
@@ -737,7 +873,6 @@ function saveDraft() {
     const draft = {
         date: document.getElementById('inspectDate').value,
         time: document.getElementById('inspectTime').value,
-        day: document.getElementById('dayOfWeek').value,
         weatherAM: document.getElementById('weatherAM').value,
         weatherPM: document.getElementById('weatherPM').value,
         inspected: document.getElementById('inspectedBy').value,
@@ -758,7 +893,6 @@ function restoreDraft() {
         const d = JSON.parse(raw);
         if (d.date) document.getElementById('inspectDate').value = d.date;
         if (d.time) document.getElementById('inspectTime').value = d.time;
-        if (d.day) document.getElementById('dayOfWeek').value = d.day;
         if (d.weatherAM) document.getElementById('weatherAM').value = d.weatherAM;
         if (d.weatherPM) document.getElementById('weatherPM').value = d.weatherPM;
         if (d.inspected) document.getElementById('inspectedBy').value = d.inspected;
@@ -780,6 +914,8 @@ function restoreDraft() {
                 }
             }
         }
+        // Update day of week after restore
+        updateDayOfWeek();
     } catch(e) {}
 }
 
@@ -791,12 +927,17 @@ document.querySelectorAll('input, select, textarea').forEach(el => {
     el.addEventListener('change', autoSaveHandler);
 });
 
+// ============ PAGE INITIALIZATION ============
 const today = new Date().toISOString().split('T')[0];
 if (!document.getElementById('inspectDate').value) document.getElementById('inspectDate').value = today;
+
+// Update day of week on page load
+updateDayOfWeek();
 
 restoreDraft();
 document.getElementById('exportBtn').addEventListener('click', exportToExcel);
 
+// ============ COLLAPSIBLE SECTIONS ============
 document.querySelectorAll('.section-title').forEach(title => {
     title.addEventListener('click', () => {
         const sectionId = title.getAttribute('data-section');
