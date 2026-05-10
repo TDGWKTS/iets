@@ -175,15 +175,15 @@
 
         <!-- ========================= SECTION 7: OSA and CONTAINER ACCESS ========================= -->
         <div class="section">
-            <div class="section-title" data-section="sec7">7. OSA AND CONTAINER ACCESS <span class="toggle-icon">▼</span></div>
-            <div class="section-content" id="sec7">
-                <div class="field-row"><span class="label">7.1 Container access cleanliness</span><div class="input-area"><select name="osa_clean"><option value="">Select</option><option value="Y">Y (Clean)</option><option value="N">N (Dirty)</option></select></div></div>
-                <div class="field-row"><span class="label">7.2 Container stockpile</span><div class="input-area"><input type="text" name="osa_stockpile" placeholder="(Number of containers)"></div></div>
-                <div class="field-row"><span class="label">7.3 Container handling unit (CHU)</span><div class="input-area"><select name="osa_chu"><option value="">Select</option><option value="Y">Y (OK)</option><option value="N">N (Fault)</option></select></div></div>
-                <div class="field-row"><span class="label">7.4 Lighting / Odour</span><div class="input-area"><select name="osa_light_odour"><option value="">Select</option><option value="Y/Y">Y/Y</option><option value="N/N">N/N</option><option value="Y/N">Y/N</option><option value="N/Y">N/Y</option></select></div></div>
-                <div class="field-row"><span class="label">7.5 no. of Quality Checking of Waste Container (QCF)</span><div class="input-area"><input type="text" name="osa_qcf" placeholder="LCF: ___ QCF: ___"></div></div>
-            </div>
-        </div>
+    <div class="section-title" data-section="sec7">7. OSA AND CONTAINER ACCESS <span class="toggle-icon">▼</span></div>
+    <div class="section-content" id="sec7">
+        <div class="field-row"><span class="label">7.1 Container access cleanliness</span><div class="input-area"><select name="osa_clean"><option value="">Select</option><option value="Y">Y (Clean)</option><option value="N">N (Dirty)</option></select></div></div>
+        <div class="field-row"><span class="label">7.2 Container stockpile</span><div class="input-area"><input type="text" name="osa_stockpile" placeholder="(Number of containers)"></div></div>
+        <div class="field-row"><span class="label">7.3 Container handling unit (CHU)</span><div class="input-area"><select name="osa_chu"><option value="">Select</option><option value="Y">Y (OK)</option><option value="N">N (Fault)</option></select></div></div>
+        <div class="field-row"><span class="label">7.4 Lighting / Odour</span><div class="input-area"><select name="osa_light_odour"><option value="">Select</option><option value="Y/Y">Y/Y</option><option value="N/N">N/N</option><option value="Y/N">Y/N</option><option value="N/Y">N/Y</option></select></div></div>
+        <div class="field-row"><span class="label">7.5 no. of Quality Checking of Waste Container (QCF)</span><div class="input-area"><input type="text" name="osa_qcf" id="osa_qcf" placeholder="e.g.  0 1 or 14 13"></div></div>
+    </div>
+</div>
 
         <!-- ========================= SECTION 8: BERTH AREA ========================= -->
         <div class="section">
@@ -732,6 +732,131 @@ if (airBlowerField) {
             }
         }
     });
+}
+
+// ============ SMART QCF FORMATTING (LCF / QCF) ============
+function formatQCF(input) {
+    if (!input || input.trim() === '') return input;
+    let str = input.toString().trim();
+    
+    // 匹配数字 (0-99)
+    const numberPattern = /^(0|[1-9][0-9]?)$/;
+    
+    // 如果已经是标准格式 LCF: X     QCF: Y，直接返回
+    if (/^LCF:\s*\d+\s+QCF:\s*\d+$/i.test(str)) {
+        let match = str.match(/LCF:\s*(\d+)\s+QCF:\s*(\d+)/i);
+        if (match && match[1] && match[2]) {
+            return `LCF: ${match[1]}     QCF: ${match[2]}`;
+        }
+        return str;
+    }
+    
+    // 如果已经是 LCF: X 格式
+    if (/^LCF:\s*\d+$/i.test(str)) {
+        let match = str.match(/LCF:\s*(\d+)/i);
+        if (match && match[1]) {
+            return `LCF: ${match[1]}`;
+        }
+        return str;
+    }
+    
+    // 如果已经是 QCF: X 格式
+    if (/^QCF:\s*\d+$/i.test(str)) {
+        let match = str.match(/QCF:\s*(\d+)/i);
+        if (match && match[1]) {
+            return `QCF: ${match[1]}`;
+        }
+        return str;
+    }
+    
+    let lcf = '';
+    let qcf = '';
+    
+    // 处理逗号分隔: 14,13 或 0,1 或 0,0
+    if (str.includes(',')) {
+        let parts = str.split(',').map(p => p.trim());
+        if (parts.length >= 2) {
+            // 验证两个都是有效数字 (0-99)
+            if (numberPattern.test(parts[0]) && numberPattern.test(parts[1])) {
+                lcf = parts[0];
+                qcf = parts[1];
+            } else if (numberPattern.test(parts[0])) {
+                lcf = parts[0];
+            } else if (numberPattern.test(parts[1])) {
+                qcf = parts[1];
+            }
+        } else if (parts.length === 1 && numberPattern.test(parts[0])) {
+            lcf = parts[0];
+        }
+    }
+    // 处理空格分隔: 14 13
+    else if (str.includes(' ')) {
+        let parts = str.split(/\s+/).map(p => p.trim());
+        if (parts.length >= 2) {
+            if (numberPattern.test(parts[0]) && numberPattern.test(parts[1])) {
+                lcf = parts[0];
+                qcf = parts[1];
+            } else if (numberPattern.test(parts[0])) {
+                lcf = parts[0];
+            } else if (numberPattern.test(parts[1])) {
+                qcf = parts[1];
+            }
+        } else if (parts.length === 1 && numberPattern.test(parts[0])) {
+            lcf = parts[0];
+        }
+    }
+    // 处理斜杠分隔: 14/13
+    else if (str.includes('/')) {
+        let parts = str.split('/').map(p => p.trim());
+        if (parts.length >= 2) {
+            if (numberPattern.test(parts[0]) && numberPattern.test(parts[1])) {
+                lcf = parts[0];
+                qcf = parts[1];
+            } else if (numberPattern.test(parts[0])) {
+                lcf = parts[0];
+            } else if (numberPattern.test(parts[1])) {
+                qcf = parts[1];
+            }
+        } else if (parts.length === 1 && numberPattern.test(parts[0])) {
+            lcf = parts[0];
+        }
+    }
+    // 处理单个数字 (0-99)
+    else if (numberPattern.test(str)) {
+        qcf = str;
+    }
+    
+    // 构建返回结果
+    if (lcf !== '' && qcf !== '') {
+        return `LCF: ${lcf}     QCF: ${qcf}`;
+    } else if (lcf !== '') {
+        return `LCF: ${lcf}`;
+    } else if (qcf !== '') {
+        return `QCF: ${qcf}`;
+    }
+    
+    return str;
+}
+
+function applyQCFFormat(el) {
+    if (el.value && el.value.trim()) {
+        let formatted = formatQCF(el.value);
+        if (formatted !== el.value) {
+            el.value = formatted;
+        }
+    }
+}
+
+// 绑定 QCF 字段
+const qcfField = document.getElementById('osa_qcf');
+if (qcfField) {
+    qcfField.addEventListener('blur', () => applyQCFFormat(qcfField));
+}
+
+// 绑定 QCF 字段
+const qcfField = document.getElementById('osa_qcf');
+if (qcfField) {
+    qcfField.addEventListener('blur', () => applyQCFFormat(qcfField));
 }
 
 // 绑定 SBR 状态字段
