@@ -181,7 +181,7 @@
         <div class="field-row"><span class="label">7.2 Container stockpile</span><div class="input-area"><input type="text" name="osa_stockpile" placeholder="(Number of containers)"></div></div>
         <div class="field-row"><span class="label">7.3 Container handling unit (CHU)</span><div class="input-area"><select name="osa_chu"><option value="">Select</option><option value="Y">Y (OK)</option><option value="N">N (Fault)</option></select></div></div>
         <div class="field-row"><span class="label">7.4 Lighting / Odour</span><div class="input-area"><select name="osa_light_odour"><option value="">Select</option><option value="Y/Y">Y/Y</option><option value="N/N">N/N</option><option value="Y/N">Y/N</option><option value="N/Y">N/Y</option></select></div></div>
-        <div class="field-row"><span class="label">7.5 no. of Quality Checking of Waste Container (QCF)</span><div class="input-area"><input type="text" name="osa_qcf" id="osa_qcf" placeholder="e.g.  0 1 or 14 13"></div></div>
+        <div class="field-row"><span class="label">7.5 No. of Quality Checking of Waste Container (LCF / QCF)</span><div class="input-area"><input type="text" name="osa_qcf" id="osa_qcf" placeholder="e.g.  0 1 or 14 13"></div></div>
     </div>
 </div>
 
@@ -596,7 +596,7 @@ document.querySelectorAll('input[type="text"], textarea').forEach(el => {
     const isPersonIdField = (el.placeholder || '').includes('e.g. i21') || (el.placeholder || '').includes('I(TD)21');
     const isNumberField = (el.placeholder || '').includes('Number of persons') || (el.placeholder || '').includes('Number of workers') || (el.placeholder || '').includes('Number of containers');
     
-    if (!isPersonIdField && !isNumberField && el.id !== 'inspectedBy' && !el.placeholder?.includes("1548")) {
+    if (!isPersonIdField && !isNumberField && el.id !== 'inspectedBy' && !el.placeholder?.includes("1548") && el.id !== 'wwt_air_blower' && el.id !== 'wwt_sbr_status' && el.id !== 'osa_qcf') {
         el.addEventListener('blur', function() { 
             if (this.value && !isSmartIdConverting) {
                 this.value = smartCapitalize(this.value);
@@ -697,43 +697,6 @@ function formatSBRStatus(value) {
     return convertedParts.join(' / ');
 }
 
-// ============ SMART VESSEL STATUS FORMATTING ============
-function formatVesselStatus(value) {
-    if (!value || value.trim() === '') return value;
-    let str = value.toString().trim();
-    
-    if (str.includes('berthed') || str.includes('left')) return str;
-    
-    // 提取时间
-    let timeMatch = str.match(/(\d{1,2}:\d{2}|\d{4})/);
-    let time = timeMatch ? timeMatch[1] : '';
-    
-    // 提取数字
-    let numMatch = str.match(/\d+/g);
-    let numbers = numMatch ? numMatch.join('/') : '';
-    
-    if (time && numbers) {
-        return `${time} / ${numbers}`;
-    }
-    if (time) return time;
-    if (numbers) return numbers;
-    
-    return str;
-}
-
-// 绑定 Air Blower 字段
-const airBlowerField = document.getElementById('wwt_air_blower');
-if (airBlowerField) {
-    airBlowerField.addEventListener('blur', function() {
-        if (this.value && this.value.trim()) {
-            let formatted = formatAirBlower(this.value);
-            if (formatted !== this.value) {
-                this.value = formatted;
-            }
-        }
-    });
-}
-
 // ============ SMART QCF FORMATTING (LCF / QCF) ============
 function formatQCF(input) {
     if (!input || input.trim() === '') return input;
@@ -776,7 +739,6 @@ function formatQCF(input) {
     if (str.includes(',')) {
         let parts = str.split(',').map(p => p.trim());
         if (parts.length >= 2) {
-            // 验证两个都是有效数字 (0-99)
             if (numberPattern.test(parts[0]) && numberPattern.test(parts[1])) {
                 lcf = parts[0];
                 qcf = parts[1];
@@ -838,25 +800,17 @@ function formatQCF(input) {
     return str;
 }
 
-function applyQCFFormat(el) {
-    if (el.value && el.value.trim()) {
-        let formatted = formatQCF(el.value);
-        if (formatted !== el.value) {
-            el.value = formatted;
+// 绑定 Air Blower 字段
+const airBlowerField = document.getElementById('wwt_air_blower');
+if (airBlowerField) {
+    airBlowerField.addEventListener('blur', function() {
+        if (this.value && this.value.trim()) {
+            let formatted = formatAirBlower(this.value);
+            if (formatted !== this.value) {
+                this.value = formatted;
+            }
         }
-    }
-}
-
-// 绑定 QCF 字段
-const qcfField = document.getElementById('osa_qcf');
-if (qcfField) {
-    qcfField.addEventListener('blur', () => applyQCFFormat(qcfField));
-}
-
-// 绑定 QCF 字段
-const qcfField = document.getElementById('osa_qcf');
-if (qcfField) {
-    qcfField.addEventListener('blur', () => applyQCFFormat(qcfField));
+    });
 }
 
 // 绑定 SBR 状态字段
@@ -867,6 +821,19 @@ if (sbrStatusField) {
             let formatted = formatSBRStatus(this.value);
             if (formatted !== this.value) {
                 this.value = formatted;
+            }
+        }
+    });
+}
+
+// 绑定 QCF 字段
+const qcfField = document.getElementById('osa_qcf');
+if (qcfField) {
+    qcfField.addEventListener('blur', () => {
+        if (qcfField.value && qcfField.value.trim()) {
+            let formatted = formatQCF(qcfField.value);
+            if (formatted !== qcfField.value) {
+                qcfField.value = formatted;
             }
         }
     });
@@ -1010,6 +977,7 @@ function clearFormAfterExport() {
     
     if (airBlowerField) airBlowerField.value = '';
     if (sbrStatusField) sbrStatusField.value = '';
+    if (qcfField) qcfField.value = '';
     
     updateDayOfWeek();
     
